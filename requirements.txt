@@ -8,3 +8,7 @@ rasterio
 rioxarray
 solara
 widgetsnbextension
+earthengine-api
+geemap
+folium
+ipywidgets
