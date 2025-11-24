@@ -22,7 +22,7 @@ def create_3d_map():
     m = leafmap.Map(
         style=style_url,
         center=[121.424, 23.682], 
-        zoom=13,
+        zoom=10,
         # 啟用地形：當使用 MapTiler Style 時，通常只需設定 style URL，
         # Leafmap 會自動處理 style.json 內定義的地形源。
         # 如果需要明確設定，通常是: terrain={"source": "mapbox-dem"}
