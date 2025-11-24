@@ -1,15 +1,18 @@
 import solara
 
-
 @solara.component
 def Page():
     with solara.Column(align="center"):
-        markdown = """
-        ## 3D Mapping with Leafmap and MapLibre
-        This is a Solara template for a 3D mapping application using Leafmap and MapLibre. Click on the menu above to see the different examples.
-        <br>
-        Source code: <https://github.com/opengeos/solara-maplibre>
-        ![image](https://github.com/user-attachments/assets/efc9e43b-99c0-40b4-af08-4971e8b96919)
-        """
+        solara.Markdown("""
+        ## 花蓮馬太鞍溪堰塞湖災害地圖平台
 
-        solara.Markdown(markdown)
+        本網站聚焦於花蓮縣光復鄉馬太鞍溪流域之堰塞湖災害，結合地形分析、河川地貌與災害風險視角，建立一個以地理專業為基礎的災害地圖平台。透過2D與3D空間視覺化，呈現堰塞湖形成過程與其對下游聚落的潛在威脅。
+
+        ## 地理背景與形成機制
+
+        馬太鞍溪上游位於中央山脈東側，地勢陡峭且地質破碎，在極端降雨事件下容易發生大規模坡面崩塌。當土石堆積於河道形成天然阻塞，水流受阻而快速蓄積，因而產生堰塞湖。此類短期形成的壩體結構鬆散，具有高度不穩定性，一旦潰決，將對下游光復市區造成突發性洪水衝擊。
+
+        ## 地理視角下的防災意義
+
+        本網站希望透過空間分析的方式，協助使用者理解堰塞湖並非單一災害事件，而是地形、氣候與人地互動共同作用的結果，進一步反思山區土地利用與聚落發展的安全性，強化對防災規劃與風險管理的認識。
+        """)
