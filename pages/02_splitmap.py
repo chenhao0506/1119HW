@@ -1,9 +1,10 @@
 import solara
 import ee
-import geemap.foliumap as geemap  # 如果用 folium 後端地圖
-# 或 import geemap.leafmap as geemap  # 若用 leafmap 後端
+import geemap.foliumap as geemap  
+import os
 
 # 1. 初始化 Earth Engine
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "ee_service_account.json"
 ee.Initialize()
 
 def create_split_map():
