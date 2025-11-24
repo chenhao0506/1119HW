@@ -3,9 +3,8 @@ title: Solara WebGIS Demo App Full Version
 emoji: 🌍
 colorFrom: green
 colorTo: blue
-sdk: docker
+sdk: solara
 pinned: false
-app_port: 7860
 ---
 
 # 1119HW
