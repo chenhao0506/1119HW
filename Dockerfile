@@ -1,31 +1,31 @@
-# --- 基礎映像 ---
-FROM python:3.11-slim
+# 1. 選擇 Python 3.11 標準版 作為基礎
+FROM python:3.11
 
-# --- 系統套件（GDAL, PROJ 等 GIS 必備） ---
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    gdal-bin \
-    libgdal-dev \
-    libproj-dev \
-    && rm -rf /var/lib/apt/lists/*
+# 2. 設定工作目錄
+WORKDIR /code
 
-# --- 設定 GDAL 環境變數 ---
-ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
-ENV C_INCLUDE_PATH=/usr/include/gdal
+# 3. 複製 requirements 並安裝
+# (利用 Docker cache 機制，先裝套件再複製程式碼)
+COPY ./requirements.txt /code/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
-# --- 設定工作目錄 ---
-WORKDIR /app
+# 4. 建立一個非 Root 使用者 (User ID 1000)
+# 這是 Hugging Face Spaces 最關鍵的一步！
+RUN useradd -m -u 1000 user
 
-# --- 複製 requirements.txt 並安裝套件 ---
-COPY requirements.txt .
-RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
+# 5. 切換到該使用者
+USER user
 
-# --- 複製整個 repo ---
-COPY . .
+# 6. 設定環境變數
+# 並關掉加速靜態檔案讀取 (SOLARA_ASSETS_PROXY=False)
+ENV HOME=/home/user \
+    PATH=/home/user/.local/bin:$PATH \
+    SOLARA_ASSETS_PROXY=False
 
-# --- 暴露 Solara 預設埠 ---
-EXPOSE 7860
+# 7. 複製所有程式碼到工作目錄
+# --chown=user 確保新使用者有權限讀取這些檔案
+COPY --chown=user . /code
 
-# --- 啟動 Solara App ---
-CMD ["solara", "run", "pages", "--host", "0.0.0.0", "--port", "7860"]
+# 8. 啟動指令
+# 注意：一定要指定 host 為 0.0.0.0 和 port 為 7860
+CMD ["solara", "run", "./pages", "--host=0.0.0.0", "--port=7860"]
