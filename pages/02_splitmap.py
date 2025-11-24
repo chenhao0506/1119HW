@@ -1,51 +1,65 @@
 import solara
-import ee
-import geemap.foliumap as geemap
+import leafmap.leafmap as leafmap
+import leafmap.maplibregl as maplibregl
 import os
-import json
-from google.oauth2 import service_account
 
-# -----------------------------
-# 1. 初始化 Earth Engine
-# -----------------------------
-ee_sa_json = os.environ.get("EE_SERVICE_ACCOUNT")
-if ee_sa_json:
-    info = json.loads(ee_sa_json)
-    credentials = service_account.Credentials.from_service_account_info(info)
-    ee.Initialize(credentials)
-else:
-    ee.Authenticate()
-    ee.Initialize()
+# MapTiler 金鑰 (Hugging Face Secret)
+MAPTILER_KEY = os.environ.get("MAPTILER_API_KEY", "")
 
-# -----------------------------
-# 2. 建立 Split Map
-# -----------------------------
 def create_split_map():
-    region = ee.Geometry.Point(121.38, 23.63).buffer(3000)
-    image_pre = (ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED")
-                 .filterBounds(region)
-                 .filterDate("2025-08-01", "2025-08-15")
-                 .filter(ee.Filter.lt("CLOUDY_PIXEL_PERCENTAGE", 10))
-                 .median()
-                 .clip(region))
-    image_post = (ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED")
-                  .filterBounds(region)
-                  .filterDate("2025-09-20", "2025-10-05")
-                  .filter(ee.Filter.lt("CLOUDY_PIXEL_PERCENTAGE", 10))
-                  .median()
-                  .clip(region))
-    vis = {"bands": ["B4", "B3", "B2"], "min": 0, "max": 3000}
+    """建立左右滑動分割地圖"""
+    split_control = leafmap.split_map(
+        left_layer="Esri.WorldImagery",
+        right_layer="OpenStreetMap",
+        left_label="衛星影像",
+        right_label="街道地圖",
+        center=[23.632, 121.380],
+        zoom=14,
+    )
+    split_control.layout.height = "650px"
+    return split_control
 
-    m = geemap.Map(center=[23.63, 121.38], zoom=14, height="650px")
-    left_layer = geemap.ee_tile_layer(image_pre, vis, "潰堤前 (衛星)")
-    right_layer = geemap.ee_tile_layer(image_post, vis, "潰堤後 (衛星)")
-    m.split_map(left_layer=left_layer, right_layer=right_layer)
+def create_3d_map():
+    """建立 3D MapLibre 地圖"""
+    if not MAPTILER_KEY:
+        m = maplibregl.Map(
+            center=[120.9, 23.7],
+            zoom=7,
+            style="OpenStreetMap",
+        )
+        m.layout.height = "700px"
+        return m
+
+    style_url = f"https://api.maptiler.com/maps/outdoor-v2/style.json?key={MAPTILER_KEY}"
+    m = maplibregl.Map(
+        style=style_url,
+        center=[121.4296,23.6832],
+        zoom=12,
+        pitch=45,
+        bearing=15,
+    )
+    m.layout.height = "700px"
     return m
 
 @solara.component
 def Page():
-    solara.Markdown("## 馬太鞍溪：潰堤前後衛星影像比對")
-    solara.Markdown("左邊是潰堤前，右邊是潰堤後。滑動分割比對影像。")
-    map_widget = solara.use_memo(create_split_map, dependencies=[])
-    with solara.Column(style={"width": "100%", "height": "700px"}):
-        solara.display(map_widget)
+    solara.Markdown("## 馬太鞍溪捲簾比對 (Split Map)")
+    solara.Markdown("使用滑動分割視窗比較衛星影像與街道地圖。")
+    split_widget = solara.use_memo(create_split_map, dependencies=[])
+    solara.display(split_widget)
+
+    solara.Markdown("## 馬太鞍溪 3D 地形")
+    if not MAPTILER_KEY:
+        solara.Warning(
+            "MapTiler API Key 未設定，3D 地形將顯示基本地圖。"
+        )
+    map3d = solara.use_memo(create_3d_map, dependencies=[MAPTILER_KEY])
+    solara.display(map3d.to_solara())
+
+    solara.Markdown("### 災害說明")
+    solara.Markdown(
+        "在樺加沙颱風後，馬太鞍溪堰塞湖潰堤，洪水挾帶泥沙沖向下游，"
+        "導致馬太鞍溪橋被沖毀，下游堤防受損，政府將民眾疏散至光復糖廠。"
+    )
+    repo_url = "https://raw.githubusercontent.com/s1243001/solara1119/main/"
+    solara.Image(image=f"{repo_url}pic_03.jpg", width="100%")
