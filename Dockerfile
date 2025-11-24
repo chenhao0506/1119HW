@@ -28,4 +28,4 @@ COPY . .
 EXPOSE 7860
 
 # --- 啟動 Solara App ---
-CMD ["solara", "run", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["solara", "run", "pages", "--host", "0.0.0.0", "--port", "7860"]
