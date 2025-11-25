@@ -10,7 +10,7 @@ def create_3d_map():
         # 如果沒有 Key，回傳一個基礎地圖，但不會有地形
         m = leafmap.Map(
             center=[121.424, 23.682], 
-            zoom=13, 
+            zoom=9, 
             style="OpenStreetMap",
         )
         m.layout.height = "700px"
